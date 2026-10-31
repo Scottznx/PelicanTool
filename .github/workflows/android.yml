@@ -1,0 +1,43 @@
+name: Build PELICAN TOOL APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Criar pacote LÖVE
+        run: |
+          mkdir -p dist
+          zip -j dist/PelicanTool.love main.lua conf.lua
+
+      - name: Compilar APK Android
+        uses: love-actions/love-actions-android@v2
+        with:
+          app-name: "PELICAN TOOL"
+          bundle-id: "com.pelican.tool"
+          resource-path: "./assets/android/res"
+          love-ref: "11.5"
+          love-package: "./dist/PelicanTool.love"
+          product-name: "pelican-tool"
+          version-string: "0.3.0"
+          version-code: 3
+          output-folder: "./dist"
+
+      - name: Disponibilizar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PELICAN-TOOL-APK
+          path: dist/*.apk
+          if-no-files-found: error
